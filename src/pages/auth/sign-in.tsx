@@ -1,10 +1,14 @@
+import { useMutation } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
+import { signIn } from '@/api/sign-in'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useToast } from '@/components/ui/use-toast'
 
 const signInForm = z.object({
   username: z.string(),
@@ -14,14 +18,35 @@ const signInForm = z.object({
 type SignInForm = z.infer<typeof signInForm>
 
 export function SignIn() {
+  const navigate = useNavigate()
+
+  const { toast } = useToast()
+
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
   } = useForm<SignInForm>()
 
-  async function handleSignIn(data: any) {
-    console.log(data)
+  const { mutateAsync: authenticate } = useMutation({
+    mutationFn: signIn,
+  })
+
+  async function handleSignIn(user: SignInForm) {
+    try {
+      await authenticate({
+        username: user.username,
+        password: user.password,
+      })
+
+      navigate('/', { replace: true })
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Acessar.',
+        description: 'Credenciais inválidas.',
+      })
+    }
   }
 
   return (
