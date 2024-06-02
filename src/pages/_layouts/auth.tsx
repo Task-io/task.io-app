@@ -1,13 +1,18 @@
+import { CheckCheck } from 'lucide-react'
 import { Outlet } from 'react-router-dom'
 
-import background from '../../assets/background.svg'
-import logo from '../../assets/logo.svg'
+import background from '@/assets/background.svg'
 
 export function AuthLayout() {
   return (
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
       <div className="hidden flex-col justify-between bg-muted p-10 text-muted-foreground md:flex">
-        <img src={logo} alt="Logotipo Task.io" className="w-40" />
+        <div className="flex items-center gap-3 text-lg text-foreground">
+          <CheckCheck className="h-6 w-6 text-muted-foreground" />
+          <span className="font-leckerli-one flex flex-row text-3xl tracking-wider text-primary">
+            Task<p className="text-muted-foreground">.</p>io
+          </span>
+        </div>
 
         <img src={background} className="mt-36 w-2/3" />
 
@@ -17,11 +22,12 @@ export function AuthLayout() {
       </div>
 
       <div className="flex flex-col items-center justify-center p-6 md:p-10">
-        <img
-          src={logo}
-          alt="Logotipo Task.io"
-          className="mb-4 block w-36 sm:w-40 md:hidden"
-        />
+        <div className="flex items-center gap-3 text-lg text-foreground md:hidden">
+          <CheckCheck className="h-6 w-6 text-muted-foreground" />
+          <span className="font-leckerli-one flex flex-row text-3xl tracking-wider text-primary">
+            Task<p className="text-muted-foreground">.</p>io
+          </span>
+        </div>
         <div className="flex w-full max-w-xs flex-col items-center">
           <Outlet />
         </div>

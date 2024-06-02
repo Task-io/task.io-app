@@ -60,7 +60,7 @@ export function SignUp() {
       toast({
         variant: 'default',
         title: 'Criar conta.',
-        description: 'Conta criada! Entre agora.',
+        description: 'Conta criada! Entre agora',
         action: <ToastAction altText="Fazer login">Fazer login</ToastAction>,
         onClick: () => navigate('/sign-in'),
       })
@@ -69,7 +69,7 @@ export function SignUp() {
 
       toast({
         variant: 'destructive',
-        title: 'Erro ao criar conta.',
+        title: 'Erro ao criar conta',
         description: errorMessage,
       })
     }
