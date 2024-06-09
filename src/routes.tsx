@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '@/pages/_layouts/app'
 import { AuthLayout } from '@/pages/_layouts/auth'
-import { ListTasks } from '@/pages/app/list-tasks'
+import { ListTasks } from '@/pages/app/tasks/list-tasks'
 import { SignIn } from '@/pages/auth/sign-in'
 import { SignUp } from '@/pages/auth/sign-up'
 

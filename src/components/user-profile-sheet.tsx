@@ -66,7 +66,7 @@ export function UserProfileSheet() {
   const { mutateAsync: updateProfileFn } = useMutation({
     mutationFn: updateProfile,
   })
-  console.log(user?.id)
+
   async function handleUpdateProfile(data: UserProfileSchema) {
     try {
       await updateProfileFn({
@@ -121,6 +121,7 @@ export function UserProfileSheet() {
           <div className="grid grid-cols-2 items-center gap-2">
             <Label htmlFor="oldPassword">Senha antiga</Label>
             <Input
+              type="password"
               className="col-span-3"
               id="oldPassword"
               {...register('oldPassword')}
@@ -133,6 +134,7 @@ export function UserProfileSheet() {
           <div className="grid grid-cols-2 items-center gap-2">
             <Label htmlFor="newPassword">Nova senha</Label>
             <Input
+              type="password"
               className="col-span-3"
               id="newPassword"
               {...register('newPassword')}

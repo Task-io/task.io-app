@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react'
+import { Moon, MoonIcon, Subscript, Sun, SunIcon, SunMoon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -24,12 +24,15 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')}>
+          <SunIcon className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')}>
+          <MoonIcon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('sistema')}>
+          <SunMoon className="mr-2 h-4 w-4" />
           Sistema
         </DropdownMenuItem>
       </DropdownMenuContent>
