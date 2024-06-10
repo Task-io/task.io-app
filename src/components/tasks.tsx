@@ -18,15 +18,15 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 
 interface TasksProps {
-  content: { content: string; completed: boolean }
+  content: { id: number; content: string; completed: boolean }
   onDeleteTask: (task: string, completed: boolean) => void
-  onToggleComplete: (task: string, completed: boolean) => void
+  onToggleComplete: (id: number, completed: boolean) => void
 }
 
 export function Tasks({ content, onDeleteTask, onToggleComplete }: TasksProps) {
   const { toast } = useToast()
 
-  const { content: taskContent, completed } = content
+  const { id: taskId, content: taskContent, completed } = content
 
   // function handleDeleteTask() {
   //   toast({
@@ -38,9 +38,9 @@ export function Tasks({ content, onDeleteTask, onToggleComplete }: TasksProps) {
   //   onDeleteTask(taskContent, completed)
   // }
 
-  // function handleCheckboxChange() {
-  //   onToggleComplete(taskContent, !completed)
-  // }
+  function handleCheckboxChange() {
+    onToggleComplete(taskId, !completed)
+  }
 
   return (
     <div className="my-4 block">
@@ -52,7 +52,7 @@ export function Tasks({ content, onDeleteTask, onToggleComplete }: TasksProps) {
             title={`${completed ? 'Desmarcar' : 'Marcar como concluída'}`}
             id={`checkbox-${taskContent}`}
             checked={completed}
-            // onCheckedChange={handleCheckboxChange}
+            onCheckedChange={handleCheckboxChange}
             className={`mr-4 ${completed ? 'border-green-600 bg-green-600' : 'border-muted-foreground'}`}
           />
 

@@ -1,15 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardX, LoaderIcon, Plus } from 'lucide-react'
-import { ChangeEvent, FormEvent, InvalidEvent, useState } from 'react'
+import {
+  ArrowDownUp,
+  CheckCheck,
+  ClipboardX,
+  LoaderIcon,
+  Plus,
+} from 'lucide-react'
+import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { completeTask } from '@/api/complete-task'
 import { getTasks } from '@/api/get-tasks'
 import { registerTask } from '@/api/register-task'
 import { Tasks } from '@/components/tasks'
 import { TotalizerSkeleton } from '@/components/totalizer-skeleton'
 import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
@@ -21,10 +33,24 @@ const newTaskForm = z.object({
 
 type NewTaskForm = z.infer<typeof newTaskForm>
 
+interface Task {
+  id: number
+  description: string
+  completed: boolean
+}
+
+interface TasksResponse {
+  tasks: Task[]
+}
+
 export function ListTasks() {
   const { toast } = useToast()
 
   const queryClient = useQueryClient()
+
+  const [sortOption, setSortOption] = useState<'toDoFirst' | 'completedFirst'>(
+    'toDoFirst',
+  )
 
   const {
     register,
@@ -41,8 +67,20 @@ export function ListTasks() {
 
   const { mutateAsync: registerTaskFn } = useMutation({
     mutationFn: registerTask,
-    onSuccess: () => {
-      queryClient.invalidateQueries('tasks')
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+
+  const { mutateAsync: completeTaskFn } = useMutation({
+    mutationFn: completeTask,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      const tasks = queryClient.getQueryData<TasksResponse>(['tasks'])
+      if (tasks) {
+        const sortedTasks = sortTasks(tasks.tasks, sortOption)
+        queryClient.setQueryData(['tasks'], { ...tasks, tasks: sortedTasks })
+      }
     },
   })
 
@@ -71,9 +109,24 @@ export function ListTasks() {
     }
   }
 
-  // async function handleToggleComplete() {
-  // }
+  async function handleToggleComplete(id: number, completed: boolean) {
+    await completeTaskFn({
+      id,
+      completed,
+    })
+  }
 
+  function sortTasks(tasks: Task[], option: 'toDoFirst' | 'completedFirst') {
+    return tasks.sort((a, b) => {
+      if (option === 'toDoFirst') {
+        return Number(a.completed) - Number(b.completed)
+      } else {
+        return Number(b.completed) - Number(a.completed)
+      }
+    })
+  }
+
+  const sortedTasks = result ? sortTasks(result.tasks, sortOption) : []
   const completedTasksCount = result?.tasks.filter(
     (task) => task.completed,
   ).length
@@ -133,7 +186,51 @@ export function ListTasks() {
           </div>
         </header>
 
-        {result?.tasks.length ? <Separator /> : null}
+        {result?.tasks.length ? (
+          <div className="flex items-center justify-between">
+            <div className="flex-grow">
+              <Separator className="w-[calc(100%-8px)]" />
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button title="Ordenar" variant="ghost">
+                  <ArrowDownUp />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-40">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Ordenação</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Ordenar por:
+                    </p>
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <Button
+                      variant={`${sortOption === 'toDoFirst' ? 'outline' : 'ghost'}`}
+                      onClick={() => setSortOption('toDoFirst')}
+                    >
+                      {sortOption === 'toDoFirst' && (
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                      )}
+                      A fazer
+                    </Button>
+
+                    <Button
+                      variant={`${sortOption === 'completedFirst' ? 'outline' : 'ghost'}`}
+                      onClick={() => setSortOption('completedFirst')}
+                    >
+                      {sortOption === 'completedFirst' && (
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                      )}
+                      Concluídas
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        ) : null}
 
         <div className="mt-8 ">
           {isLoadingTasks ? (
@@ -142,17 +239,17 @@ export function ListTasks() {
             </div>
           ) : result?.tasks.length ? (
             <>
-              {result?.tasks.map((task) => {
+              {sortedTasks.map((task) => {
                 return (
                   <Tasks
                     key={`${task.id}`}
                     content={{
-                      taskId: task.id,
+                      id: task.id,
                       content: task.description,
                       completed: task.completed,
                     }}
                     // onDeleteTask={deleteTask}
-                    // onToggleComplete={handleToggleComplete}
+                    onToggleComplete={handleToggleComplete}
                   />
                 )
               })}
