@@ -9,7 +9,7 @@ export function AuthLayout() {
       <div className="hidden flex-col justify-between bg-muted p-10 text-muted-foreground md:flex">
         <div className="flex items-center gap-3 text-lg text-foreground">
           <CheckCheck className="h-6 w-6 text-muted-foreground" />
-          <span className="font-leckerli-one flex flex-row text-3xl tracking-wider text-primary">
+          <span className="flex flex-row font-leckerli-one text-3xl tracking-wider text-primary">
             Task<p className="text-muted-foreground">.</p>io
           </span>
         </div>
@@ -24,7 +24,7 @@ export function AuthLayout() {
       <div className="flex flex-col items-center justify-center p-6 md:p-10">
         <div className="flex items-center gap-3 text-lg text-foreground md:hidden">
           <CheckCheck className="h-6 w-6 text-muted-foreground" />
-          <span className="font-leckerli-one flex flex-row text-3xl tracking-wider text-primary">
+          <span className="flex flex-row font-leckerli-one text-3xl tracking-wider text-primary">
             Task<p className="text-muted-foreground">.</p>io
           </span>
         </div>
