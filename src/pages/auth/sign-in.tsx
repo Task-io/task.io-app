@@ -49,7 +49,7 @@ export function SignIn() {
 
       toast({
         variant: 'destructive',
-        title: 'Acessar.',
+        title: 'Acessar',
         description: errorMessage,
       })
     }
