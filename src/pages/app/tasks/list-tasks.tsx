@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { completeTask } from '@/api/complete-task'
+import { deleteTask } from '@/api/delete-task'
 import { getTasks } from '@/api/get-tasks'
 import { registerTask } from '@/api/register-task'
 import { Tasks } from '@/components/tasks'
@@ -84,6 +85,18 @@ export function ListTasks() {
     },
   })
 
+  const { mutateAsync: deleteTaskFn } = useMutation({
+    mutationFn: deleteTask,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      const tasks = queryClient.getQueryData<TasksResponse>(['tasks'])
+      if (tasks) {
+        const sortedTasks = sortTasks(tasks.tasks, sortOption)
+        queryClient.setQueryData(['tasks'], { ...tasks, tasks: sortedTasks })
+      }
+    },
+  })
+
   async function handleCreateNewTask(data: NewTaskForm) {
     try {
       await registerTaskFn({
@@ -116,6 +129,27 @@ export function ListTasks() {
     })
   }
 
+  async function handleDeleteTask(id: number) {
+    try {
+      await deleteTaskFn({
+        id,
+      })
+
+      toast({
+        title: 'Tarefa',
+        description: 'A tarefa foi excluída',
+      })
+    } catch (error) {
+      const errorMessage = axiosErrorHandler(error)
+
+      toast({
+        variant: 'destructive',
+        title: 'Tarefa',
+        description: errorMessage,
+      })
+    }
+  }
+
   function sortTasks(tasks: Task[], option: 'toDoFirst' | 'completedFirst') {
     return tasks.sort((a, b) => {
       if (option === 'toDoFirst') {
@@ -144,9 +178,6 @@ export function ListTasks() {
             className="h-14 w-full resize-none p-4"
             placeholder="Adicione uma nova tarefa"
             id="task"
-            // value={newTaskText}
-            // onChange={handleNewTaskChange}
-            // onInvalid={handleNewTaskInvalid}
             required
             {...register('description')}
           />
@@ -248,8 +279,8 @@ export function ListTasks() {
                       content: task.description,
                       completed: task.completed,
                     }}
-                    // onDeleteTask={deleteTask}
                     onToggleComplete={handleToggleComplete}
+                    onDeleteTask={handleDeleteTask}
                   />
                 )
               })}
