@@ -4,13 +4,13 @@ export interface CompleteTaskQuery {
   id: number
 }
 
-export interface CompleteTaskBody {
+export interface CompleteTaskResponse {
   completed: boolean
 }
 
 export interface CompleteTaskInput
   extends CompleteTaskQuery,
-    CompleteTaskBody {}
+    CompleteTaskResponse {}
 
 export async function completeTask({ id, completed }: CompleteTaskInput) {
   await api.put(`/tasks/${id}`, { completed })
