@@ -89,7 +89,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
   const {
     data: result,
     isLoading: isLoadingComments,
-    refetch,
+    refetch: refetchComments,
   } = useQuery({
     queryKey: ['comments', taskId],
     queryFn: () => getComments({ id: taskId }),
@@ -117,26 +117,6 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
 
   const { mutateAsync: deleteCommentFn } = useMutation({
     mutationFn: deleteComment,
-    onMutate: async ({ commentId }) => {
-      await queryClient.cancelQueries(['comments', taskId])
-
-      const previousComments = queryClient.getQueryData(['comments', taskId])
-
-      queryClient.setQueryData(['comments', taskId], (old: any) => ({
-        ...old,
-        comments: old.comments.filter(
-          (comment: Comment) => comment.id !== commentId,
-        ),
-      }))
-
-      return { previousComments }
-    },
-    onError: (err, variables, context) => {
-      queryClient.setQueryData(['comments', taskId], context.previousComments)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['comments', taskId])
-    },
   })
 
   function handleCheckboxChange() {
@@ -155,7 +135,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
       })
 
       resetComment() // Limpar textarea ao adicionar tarefa
-      refetch() // Atualiza a lista de comentários após a criação bem-sucedida do comentário
+      refetchComments() // Atualiza a lista de comentários após a criação bem-sucedida do comentário
 
       toast({
         variant: 'default',
@@ -176,6 +156,8 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
   async function handleDeleteComment(commentId: number) {
     try {
       await deleteCommentFn({ commentId })
+
+      refetchComments()
 
       toast({
         title: 'Comentário',
@@ -259,7 +241,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
         <AlertDialog
           onOpenChange={(isOpen) => {
             setIsOpen(isOpen)
-            if (isOpen) refetch()
+            if (isOpen) refetchComments()
           }}
         >
           <AlertDialogTrigger asChild>
@@ -339,9 +321,11 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Comentários:</h4>
                 <div>
-                  <span className="mr-2 items-center rounded-sm bg-primary px-3 text-white">
-                    {result?.comments.length}
-                  </span>
+                  <div className="inline-flex font-medium text-muted-foreground">
+                    <span className="mr-2 items-center rounded-sm bg-primary px-3 text-white">
+                      {result?.comments.length}
+                    </span>
+                  </div>
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"

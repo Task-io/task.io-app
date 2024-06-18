@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { getUser } from '@/api/get-user'
-// import { getManagedRestaurant } from '@/api/get-managed-restaurant'
 import { updateProfile } from '@/api/update-profile'
 import {
   SheetClose,
@@ -23,14 +22,22 @@ import { Label } from './ui/label'
 
 const userProfileSchema = z
   .object({
-    name: z.string().min(1),
+    name: z.string().min(3, { message: 'Digite o nome completo.' }),
+    username: z.string(),
     oldPassword: z.string().optional(),
-    newPassword: z.string().optional(),
+    newPassword: z
+      .string()
+      .min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' })
+      .regex(/[A-Z]/, {
+        message: 'A senha deve conter pelo menos uma letra maiúscula.',
+      })
+      .regex(/[0-9]/, { message: 'A senha deve conter pelo menos um número.' })
+      .optional(),
   })
   .refine(
     (data) => {
       if (data.oldPassword) {
-        return data.newPassword?.length > 0
+        return data.newPassword && data.newPassword?.length > 0
       }
       return true
     },
@@ -54,6 +61,7 @@ export function UserProfileSheet() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<UserProfileSchema>({
     resolver: zodResolver(userProfileSchema),
@@ -70,7 +78,7 @@ export function UserProfileSheet() {
   async function handleUpdateProfile(data: UserProfileSchema) {
     try {
       await updateProfileFn({
-        id: user?.id,
+        id: user?.id ?? 0,
         name: data.name,
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
@@ -147,7 +155,7 @@ export function UserProfileSheet() {
 
         <SheetFooter>
           <SheetClose asChild>
-            <Button variant="ghost" type="button">
+            <Button variant="ghost" type="button" onClick={() => reset()}>
               Cancelar
             </Button>
           </SheetClose>

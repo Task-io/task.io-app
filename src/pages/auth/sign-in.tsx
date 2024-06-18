@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
+import { queryClient } from '@/lib/react-query'
 import { axiosErrorHandler } from '@/utils/axiosErrorHandler'
 
 const signInForm = z.object({
@@ -42,6 +43,9 @@ export function SignIn() {
         username: user.username,
         password: user.password,
       })
+
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
 
       navigate('/', { replace: true })
     } catch (error) {
