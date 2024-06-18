@@ -1,10 +1,10 @@
 import { api } from '@/lib/axios'
 
 interface UpdateProfileBody {
-  id: string
+  id: number
   name: string
-  oldPassword: string | null
-  newPassword: string | null
+  oldPassword?: string
+  newPassword?: string
 }
 
 export async function updateProfile({
@@ -13,5 +13,15 @@ export async function updateProfile({
   oldPassword,
   newPassword,
 }: UpdateProfileBody) {
-  await api.put(`/users/${id}`, { name, oldPassword, newPassword })
+  const data: Record<string, string | undefined> = { name }
+
+  if (oldPassword) {
+    data.oldPassword = oldPassword
+  }
+
+  if (newPassword) {
+    data.newPassword = newPassword
+  }
+
+  await api.put(`/users/${id}`, data)
 }
