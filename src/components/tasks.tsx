@@ -9,7 +9,7 @@ import {
   Plus,
   Trash,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -229,6 +229,12 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
     })
   }
 
+  useEffect(() => {
+    if (isEditing) {
+      resetDescription({ description: taskContent, taskId })
+    }
+  }, [isEditing, taskContent, taskId, resetDescription])
+
   return (
     <div className="my-4 block">
       <div
@@ -266,7 +272,6 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
               <AlertDialogTitle className="flex flex-row items-center justify-between gap-4">
                 {isEditing ? (
                   <Textarea
-                    defaultValue={taskContent}
                     {...registerDescription('description')}
                     className="h-14 w-full resize-none p-4"
                   />
@@ -333,16 +338,21 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Comentários:</h4>
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-8 p-0"
-                    title="Expandir/recolher comentários"
-                  >
-                    <ChevronsUpDown className="h-4 w-4" />
-                  </Button>
-                </CollapsibleTrigger>
+                <div>
+                  <span className="mr-2 items-center rounded-sm bg-primary px-3 text-white">
+                    {result?.comments.length}
+                  </span>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-8 p-0"
+                      title="Expandir/recolher comentários"
+                    >
+                      <ChevronsUpDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
               </div>
               {isLoadingComments ? (
                 <div className="flex items-center justify-center">
@@ -386,7 +396,9 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                 />
               </div>
               <AlertDialogFooter className="mt-8">
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setIsEditing(false)}>
+                  Cancelar
+                </AlertDialogCancel>
                 <Button
                   disabled={isSubmitting || completed}
                   type="submit"
