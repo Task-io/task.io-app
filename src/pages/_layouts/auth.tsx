@@ -1,9 +1,20 @@
 import { CheckCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
-import background from '@/assets/background.svg'
+import backgroundDark from '@/assets/background-dark.svg'
+import backgroundLight from '@/assets/background-light.svg'
 
 export function AuthLayout() {
+  const [theme, setTheme] = useState('')
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('taskio-theme')
+    if (storedTheme) {
+      setTheme(storedTheme)
+    }
+  }, [])
+
   return (
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
       <div className="hidden flex-col justify-between bg-muted p-10 text-muted-foreground md:flex">
@@ -14,7 +25,10 @@ export function AuthLayout() {
           </span>
         </div>
 
-        <img src={background} className="mt-36 w-2/3" />
+        <img
+          src={theme === 'light' ? backgroundLight : backgroundDark}
+          className="ml-16 mt-16 w-2/3"
+        />
 
         <footer className="text-sm">
           Task.io &copy; task.io - {new Date().getFullYear()}
