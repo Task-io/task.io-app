@@ -1,10 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronsUpDown, Dot, Ellipsis, Plus, Trash } from 'lucide-react'
+import {
+  CheckCheck,
+  ChevronsUpDown,
+  Dot,
+  Ellipsis,
+  LoaderIcon,
+  Pencil,
+  Plus,
+  Trash,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { completeTask } from '@/api/complete-task'
 import { deleteComment } from '@/api/delete-comment'
+import { editTask } from '@/api/edit-task'
 import { Comment, getComments } from '@/api/get-comments'
 import { registerComment } from '@/api/register-comment'
 import {
@@ -30,11 +41,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
 import { axiosErrorHandler } from '@/utils/axiosErrorHandler'
 
+const newTaskDescriptionForm = z.object({
+  description: z.string(),
+  taskId: z.number(),
+})
+
 const newCommentForm = z.object({
   content: z.string(),
   taskId: z.number(),
 })
 
+type NewTaskDescriptionForm = z.infer<typeof newTaskDescriptionForm>
 type NewCommentForm = z.infer<typeof newCommentForm>
 
 interface TasksProps {
@@ -48,19 +65,30 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
   const queryClient = useQueryClient()
 
   const [isOpen, setIsOpen] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
 
   const { id: taskId, content: taskContent, completed } = content
 
   const {
+    register: registerDescription,
+    handleSubmit: handleSubmitDescription,
+    reset: resetDescription,
+  } = useForm<NewTaskDescriptionForm>({
+    defaultValues: {
+      description: taskContent,
+    },
+  })
+
+  const {
     register,
     handleSubmit,
-    reset,
+    reset: resetComment,
     formState: { isSubmitting },
   } = useForm<NewCommentForm>()
 
   const {
     data: result,
-    isLoading: isLoadingTasks,
+    isLoading: isLoadingComments,
     refetch,
   } = useQuery({
     queryKey: ['comments', taskId],
@@ -71,6 +99,20 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
 
   const { mutateAsync: registerCommentFn } = useMutation({
     mutationFn: registerComment,
+  })
+
+  const { mutateAsync: editTaskFn } = useMutation({
+    mutationFn: editTask,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+
+  const { mutateAsync: completeTaskFn } = useMutation({
+    mutationFn: completeTask,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
   })
 
   const { mutateAsync: deleteCommentFn } = useMutation({
@@ -112,11 +154,8 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
         taskId,
       })
 
-      // Limpar textarea ao adicionar tarefa
-      reset()
-
-      // Atualiza a lista de comentários após a criação bem-sucedida do comentário
-      refetch()
+      resetComment() // Limpar textarea ao adicionar tarefa
+      refetch() // Atualiza a lista de comentários após a criação bem-sucedida do comentário
 
       toast({
         variant: 'default',
@@ -153,6 +192,43 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
     }
   }
 
+  function handleEditTask() {
+    setIsEditing(true)
+  }
+
+  async function handleSaveEditTask(data: NewTaskDescriptionForm) {
+    try {
+      await editTaskFn({
+        description: data.description,
+        id: taskId,
+      })
+
+      resetDescription() // Limpar textarea ao editar tarefa
+      setIsEditing(false)
+
+      toast({
+        variant: 'default',
+        title: 'Tarefas',
+        description: 'Tarefa salva!',
+      })
+    } catch (error) {
+      const errorMessage = axiosErrorHandler(error)
+
+      toast({
+        variant: 'destructive',
+        title: 'Tarefas',
+        description: errorMessage,
+      })
+    }
+  }
+
+  async function handleCompleteTask() {
+    await completeTaskFn({
+      id: taskId,
+      completed: true,
+    })
+  }
+
   return (
     <div className="my-4 block">
       <div
@@ -166,7 +242,6 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
             onCheckedChange={handleCheckboxChange}
             className={`mr-4 ${completed ? 'border-green-600 bg-green-600' : 'border-muted-foreground'}`}
           />
-
           <Label
             htmlFor={`checkbox-${taskContent}`}
             className={`font-medium ${completed ? 'text-green-600 line-through' : ''}`}
@@ -188,21 +263,66 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="flex flex-row items-center justify-between">
-                {taskContent}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  title="Excluir tarefa"
-                  onClick={handleDeleteTask}
-                >
-                  <Trash className="h-5 w-5 text-rose-500" />
-                </Button>
+              <AlertDialogTitle className="flex flex-row items-center justify-between gap-4">
+                {isEditing ? (
+                  <Textarea
+                    defaultValue={taskContent}
+                    {...registerDescription('description')}
+                    className="h-14 w-full resize-none p-4"
+                  />
+                ) : (
+                  taskContent
+                )}
+                {!completed && (
+                  <div className="flex flex-row">
+                    {!isEditing ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Editar descrição da tarefa"
+                        className="mr-2"
+                        onClick={handleEditTask}
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Salvar descrição da tarefa"
+                        className="mr-2"
+                        onClick={handleSubmitDescription(handleSaveEditTask)}
+                      >
+                        <CheckCheck className="h-5 w-5" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="Excluir tarefa"
+                      onClick={handleDeleteTask}
+                    >
+                      <Trash className="h-5 w-5 text-rose-500" />
+                    </Button>
+                  </div>
+                )}
               </AlertDialogTitle>
-              <AlertDialogDescription
-                className={`${completed ? 'text-green-500' : 'text-rose-500'}`}
-              >
-                {completed ? 'Tarefa completa' : 'Tarefa a fazer'}
+              <AlertDialogDescription className="flex flex-row items-center justify-between">
+                <Label
+                  className={`${completed ? 'text-green-500' : 'text-rose-500 '}`}
+                >
+                  {completed ? 'Tarefa completa!' : 'Tarefa pendente'}
+                </Label>
+                {!completed && (
+                  <Button
+                    variant="link"
+                    className="-p-1 gap-2 text-green-500"
+                    onClick={handleCompleteTask}
+                  >
+                    Concluir
+                    <CheckCheck />
+                  </Button>
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -224,55 +344,59 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              {result?.comments.map((data: Comment) => {
-                return (
+              {isLoadingComments ? (
+                <div className="flex items-center justify-center">
+                  <LoaderIcon className="my-4 h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                result?.comments.map((data: Comment) => (
                   <CollapsibleContent key={data.id} className="space-y-2">
-                    <div className="flex flex-row items-center rounded-md bg-secondary px-1 py-2 text-sm">
+                    <div className="flex h-14 flex-row items-center rounded-md bg-secondary px-1 py-2 text-sm">
                       <Dot className="text-muted-foreground" /> {data.content}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-auto"
-                        title="Excluir comentário"
-                        onClick={() => handleDeleteComment(data.id)}
-                      >
-                        <Trash className="h-5 w-5 text-rose-500" />
-                      </Button>
+                      {!completed && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-auto"
+                          title="Excluir comentário"
+                          onClick={() => handleDeleteComment(data.id)}
+                        >
+                          <Trash className="h-5 w-5 text-rose-500" />
+                        </Button>
+                      )}
                     </div>
                   </CollapsibleContent>
-                )
-              })}
+                ))
+              )}
             </Collapsible>
 
             <Separator />
 
-            <>
-              <form onSubmit={handleSubmit(handleCreateNewComment)}>
-                <div className="grid w-full gap-4">
-                  <Label htmlFor="comment">Novo comentário</Label>
-                  <Textarea
-                    placeholder="Digite aqui seu novo comentário..."
-                    title="Descreva o novo comentário"
-                    className="resize-none"
-                    id="content"
-                    required
-                    {...register('content')}
-                  />
-                </div>
-
-                <AlertDialogFooter className="mt-8">
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <Button
-                    disabled={isSubmitting}
-                    type="submit"
-                    className="gap-2"
-                  >
-                    <Plus size={20} />
-                    Adicionar comentário
-                  </Button>
-                </AlertDialogFooter>
-              </form>
-            </>
+            <form onSubmit={handleSubmit(handleCreateNewComment)}>
+              <div className="grid w-full gap-4">
+                <Label htmlFor="comment">Novo comentário</Label>
+                <Textarea
+                  placeholder="Digite aqui seu novo comentário..."
+                  title="Descreva o novo comentário"
+                  className="resize-none"
+                  id="content"
+                  required
+                  disabled={completed}
+                  {...register('content')}
+                />
+              </div>
+              <AlertDialogFooter className="mt-8">
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <Button
+                  disabled={isSubmitting || completed}
+                  type="submit"
+                  className="gap-2"
+                >
+                  <Plus size={20} />
+                  Adicionar comentário
+                </Button>
+              </AlertDialogFooter>
+            </form>
           </AlertDialogContent>
         </AlertDialog>
       </div>
