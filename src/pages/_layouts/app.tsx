@@ -8,17 +8,16 @@ import { api } from '@/lib/axios'
 export function AppLayout() {
   const navigate = useNavigate()
 
-  // Verifica se o usuário está autenticado
-  // Do contrário, redireciona para o login
   useEffect(() => {
     const interceptorId = api.interceptors.response.use(
       (response) => response,
       (error) => {
         if (isAxiosError(error)) {
           const status = error.response?.status
-          const code = error.response?.statusText
+          console.log('Erro interceptado:', error)
+          console.log('Status:', status)
 
-          if (status === 401 && code === 'Unauthorized') {
+          if (status === 401) {
             navigate('/sign-in', { replace: true })
           } else {
             throw error
@@ -33,7 +32,6 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col antialiased">
       <Header />
-
       <div className="flex flex-1 flex-col gap-4 p-8 pt-6">
         <Outlet />
       </div>
