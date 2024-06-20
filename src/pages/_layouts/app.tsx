@@ -8,8 +8,6 @@ import { api } from '@/lib/axios'
 export function AppLayout() {
   const navigate = useNavigate()
 
-  // Verifica se o usuário está autenticado
-  // Do contrário, redireciona para o login
   useEffect(() => {
     const interceptorId = api.interceptors.response.use(
       (response) => response,
