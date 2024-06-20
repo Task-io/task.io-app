@@ -14,7 +14,6 @@ export function AppLayout() {
       (error) => {
         if (isAxiosError(error)) {
           const status = error.response?.status
-          const url = error.response?.config?.url
 
           if (status === 401) {
             navigate('/sign-in', { replace: true })

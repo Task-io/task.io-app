@@ -18,6 +18,7 @@ import { registerTask } from '@/api/register-task'
 import { Tasks } from '@/components/tasks'
 import { TotalizerSkeleton } from '@/components/totalizer-skeleton'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Popover,
   PopoverContent,
@@ -168,7 +169,7 @@ export function ListTasks() {
   return (
     <>
       <Helmet title="Início" />
-      <div className="px-12 py-8 md:px-40">
+      <div className="py-8 lg:px-40 xl:px-60">
         <form
           onSubmit={handleSubmit(handleCreateNewTask)}
           className="flex items-center justify-center gap-4"
@@ -179,6 +180,7 @@ export function ListTasks() {
             placeholder="Adicione uma nova tarefa"
             id="task"
             required
+            maxLength={255}
             {...register('description')}
           />
 
@@ -189,7 +191,7 @@ export function ListTasks() {
             className="h-14 gap-2"
           >
             <Plus size={20} />
-            Adicionar
+            <Label className="hidden sm:inline">Adicionar</Label>
           </Button>
         </form>
 
@@ -263,7 +265,7 @@ export function ListTasks() {
           </div>
         ) : null}
 
-        <div className="mt-8 ">
+        <div className="mt-8">
           {isLoadingTasks ? (
             <div className="flex items-center justify-center">
               <LoaderIcon className="mt-12 h-8 w-8 animate-spin text-muted-foreground" />
@@ -286,7 +288,7 @@ export function ListTasks() {
               })}
             </>
           ) : (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center text-center">
               <ClipboardX className="mt-12 h-12 w-12 text-muted-foreground" />
               <p className="mt-4 font-semibold leading-7">
                 Você ainda não tem tarefas cadastradas

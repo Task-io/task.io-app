@@ -232,7 +232,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
           />
           <Label
             htmlFor={`checkbox-${taskContent}`}
-            className={`font-medium ${completed ? 'text-green-600 line-through' : ''}`}
+            className={`font-medium ${completed ? 'text-green-600 line-through' : ''} overflow-hidden`}
           >
             {taskContent}
           </Label>
@@ -255,10 +255,11 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                 {isEditing ? (
                   <Textarea
                     {...registerDescription('description')}
+                    maxLength={255}
                     className="h-14 w-full resize-none p-4"
                   />
                 ) : (
-                  taskContent
+                  <Label className="text-lg">taskContent</Label>
                 )}
                 {!completed && (
                   <div className="flex flex-row">
@@ -375,6 +376,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                   className="resize-none"
                   id="content"
                   required
+                  maxLength={255}
                   disabled={completed}
                   {...register('content')}
                 />
