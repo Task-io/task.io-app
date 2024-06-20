@@ -315,19 +315,13 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
               </AlertDialogDescription>
             </AlertDialogHeader>
 
-            <Collapsible
-              open={isOpen}
-              onOpenChange={setIsOpen}
-              className="space-y-2"
-            >
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Comentários:</h4>
-                <div>
-                  <div className="inline-flex font-medium text-muted-foreground">
-                    <span className="mr-2 items-center rounded-sm bg-primary px-3 text-white">
-                      {result?.comments.length}
-                    </span>
-                  </div>
+                <div className="flex items-center">
+                  <span className="mr-2 rounded-sm bg-primary px-3 text-sm text-white sm:text-base">
+                    {result?.comments.length}
+                  </span>
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"
@@ -349,8 +343,8 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                 <ScrollArea>
                   <div className="mr-4 max-h-80 space-y-2">
                     {result?.comments.map((data: Comment) => (
-                      <CollapsibleContent key={data.id} className="">
-                        <div className="flex h-14 flex-row items-center overflow-hidden rounded-md bg-secondary px-1 py-2 text-sm">
+                      <CollapsibleContent key={data.id}>
+                        <div className="mt-2 flex h-14 flex-row items-center overflow-hidden rounded-md bg-secondary px-1 py-2 text-sm">
                           <Dot className="text-muted-foreground" />
                           <Label className="whitespace-normal font-normal leading-4">
                             {data.content}
