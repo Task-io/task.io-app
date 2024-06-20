@@ -14,14 +14,14 @@ export function AppLayout() {
       (error) => {
         if (isAxiosError(error)) {
           const status = error.response?.status
-          console.log('Erro interceptado:', error)
-          console.log('Status:', status)
 
           if (status === 401) {
             navigate('/sign-in', { replace: true })
           } else {
             throw error
           }
+        } else {
+          console.log('Erro não reconhecido pelo Axios:', error)
         }
       },
     )
