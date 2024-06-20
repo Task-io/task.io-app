@@ -36,6 +36,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
@@ -259,7 +260,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                     className="h-14 w-full resize-none p-4"
                   />
                 ) : (
-                  <Label className="text-lg">taskContent</Label>
+                  taskContent
                 )}
                 {!completed && (
                   <div className="flex flex-row">
@@ -339,29 +340,37 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                   </CollapsibleTrigger>
                 </div>
               </div>
+
               {isLoadingComments ? (
                 <div className="flex items-center justify-center">
                   <LoaderIcon className="my-4 h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : (
-                result?.comments.map((data: Comment) => (
-                  <CollapsibleContent key={data.id} className="space-y-2">
-                    <div className="flex h-14 flex-row items-center rounded-md bg-secondary px-1 py-2 text-sm">
-                      <Dot className="text-muted-foreground" /> {data.content}
-                      {!completed && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="ml-auto"
-                          title="Excluir comentário"
-                          onClick={() => handleDeleteComment(data.id)}
-                        >
-                          <Trash className="h-5 w-5 text-rose-500" />
-                        </Button>
-                      )}
-                    </div>
-                  </CollapsibleContent>
-                ))
+                <ScrollArea>
+                  <div className="mr-4 max-h-80 space-y-2">
+                    {result?.comments.map((data: Comment) => (
+                      <CollapsibleContent key={data.id} className="">
+                        <div className="flex h-14 flex-row items-center overflow-hidden rounded-md bg-secondary px-1 py-2 text-sm">
+                          <Dot className="text-muted-foreground" />
+                          <Label className="whitespace-normal font-normal leading-4">
+                            {data.content}
+                          </Label>
+                          {!completed && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto"
+                              title="Excluir comentário"
+                              onClick={() => handleDeleteComment(data.id)}
+                            >
+                              <Trash className="h-5 w-5 text-rose-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </CollapsibleContent>
+                    ))}
+                  </div>
+                </ScrollArea>
               )}
             </Collapsible>
 

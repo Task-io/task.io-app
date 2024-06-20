@@ -169,7 +169,7 @@ export function ListTasks() {
   return (
     <>
       <Helmet title="Início" />
-      <div className="py-8 lg:px-40 xl:px-60">
+      <div className="lg:px-40 lg:py-6 xl:px-60 xl:py-8">
         <form
           onSubmit={handleSubmit(handleCreateNewTask)}
           className="flex items-center justify-center gap-4"
@@ -188,15 +188,15 @@ export function ListTasks() {
             disabled={isSubmitting}
             type="submit"
             title="Adicionar tarefa"
-            className="h-14 gap-2"
+            className="h-14 gap-2 p-5"
           >
             <Plus size={20} />
             <Label className="hidden sm:inline">Adicionar</Label>
           </Button>
         </form>
 
-        <header className="mb-8 mt-8 flex items-center justify-between">
-          <div className="inline-flex gap-2 font-medium text-muted-foreground">
+        <header className="mt-6 flex items-center justify-between xl:mt-8">
+          <div className="inline-flex gap-2 text-sm font-medium text-muted-foreground sm:text-base">
             Tarefas criadas{' '}
             {isLoadingTasks ? (
               <TotalizerSkeleton />
@@ -206,7 +206,7 @@ export function ListTasks() {
               </span>
             )}
           </div>
-          <div className="inline-flex gap-2 font-medium text-muted-foreground">
+          <div className="inline-flex gap-2 text-sm font-medium text-muted-foreground sm:text-base">
             Concluídas{' '}
             {isLoadingTasks ? (
               <TotalizerSkeleton />
@@ -220,7 +220,7 @@ export function ListTasks() {
         </header>
 
         {result?.tasks.length ? (
-          <div className="flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between xl:mt-8">
             <div className="flex-grow">
               <Separator className="w-[calc(100%-8px)]" />
             </div>
@@ -265,7 +265,7 @@ export function ListTasks() {
           </div>
         ) : null}
 
-        <div className="mt-8">
+        <div className="mt-4 xl:mt-8">
           {isLoadingTasks ? (
             <div className="flex items-center justify-center">
               <LoaderIcon className="mt-12 h-8 w-8 animate-spin text-muted-foreground" />
