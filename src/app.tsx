@@ -6,9 +6,8 @@ import { RouterProvider } from 'react-router-dom'
 
 import { ThemeProvider } from '@/components/theme/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
-
-import { queryClient } from './lib/react-query'
-import { router } from './routes'
+import { queryClient } from '@/lib/react-query'
+import { router } from '@/routes'
 
 export function App() {
   return (

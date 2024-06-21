@@ -5,6 +5,10 @@ import { z } from 'zod'
 
 import { getUser } from '@/api/get-user'
 import { updateProfile } from '@/api/update-profile'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
 import {
   SheetClose,
   SheetContent,
@@ -15,10 +19,6 @@ import {
 } from '@/components/ui/sheet'
 import { useToast } from '@/components/ui/use-toast'
 import { axiosErrorHandler } from '@/utils/axiosErrorHandler'
-
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
 
 const userProfileSchema = z
   .object({
@@ -110,13 +110,13 @@ export function UserProfileSheet() {
       </SheetHeader>
 
       <form onSubmit={handleSubmit(handleUpdateProfile)}>
-        <div className="grid gap-4 py-8">
+        <div className="items-center space-y-2 pt-8">
           <div className="grid grid-cols-2 items-center gap-2">
             <Label htmlFor="name">Nome completo</Label>
             <Input className="col-span-3" id="name" {...register('name')} />
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-2">
+          <div className="items-center space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               disabled={true}
@@ -126,10 +126,9 @@ export function UserProfileSheet() {
             />
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-2">
+          <div className="items-center space-y-2">
             <Label htmlFor="oldPassword">Senha antiga</Label>
-            <Input
-              type="password"
+            <PasswordInput
               className="col-span-3"
               id="oldPassword"
               {...register('oldPassword')}
@@ -139,10 +138,9 @@ export function UserProfileSheet() {
             <p className="text-sm text-red-500">{errors.oldPassword.message}</p>
           )}
 
-          <div className="grid grid-cols-2 items-center gap-2">
+          <div className="items-center space-y-2 pb-8">
             <Label htmlFor="newPassword">Nova senha</Label>
-            <Input
-              type="password"
+            <PasswordInput
               className="col-span-3"
               id="newPassword"
               {...register('newPassword')}

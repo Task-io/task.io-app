@@ -1,8 +1,7 @@
 import { CheckCheck } from 'lucide-react'
 
+import { AccountMenu } from '@/components/account.menu'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
-
-import { AccountMenu } from './account.menu'
 
 export function Header() {
   return (
