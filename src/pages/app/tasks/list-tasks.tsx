@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 
 import { completeTask } from '@/api/complete-task'
@@ -19,6 +20,7 @@ import { Tasks } from '@/components/tasks'
 import { TotalizerSkeleton } from '@/components/totalizer-skeleton'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Pagination } from '@/components/ui/pagination'
 import {
   Popover,
   PopoverContent,
@@ -43,6 +45,11 @@ interface Task {
 
 interface TasksResponse {
   tasks: Task[]
+  meta: {
+    pageIndex: number
+    perPage: number
+    totalCount: number
+  }
 }
 
 export function ListTasks() {
@@ -54,6 +61,15 @@ export function ListTasks() {
     'toDoFirst',
   )
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const pageIndex = z.coerce
+    .number()
+    .transform((page) => page - 1)
+    .parse(searchParams.get('page') ?? '1')
+
+  const perPage = 5
+
   const {
     register,
     handleSubmit,
@@ -62,8 +78,12 @@ export function ListTasks() {
   } = useForm<NewTaskForm>()
 
   const { data: result, isLoading: isLoadingTasks } = useQuery({
-    queryKey: ['tasks'],
-    queryFn: getTasks,
+    queryKey: ['tasks', pageIndex, perPage],
+    queryFn: () =>
+      getTasks({
+        pageIndex,
+        perPage,
+      }),
     staleTime: Infinity,
   })
 
@@ -166,6 +186,14 @@ export function ListTasks() {
     (task) => task.completed,
   ).length
 
+  function handlePaginate(pageIndex: number) {
+    setSearchParams((prevState) => {
+      prevState.set('page', (pageIndex + 1).toString())
+
+      return prevState
+    })
+  }
+
   return (
     <>
       <Helmet title="Início" />
@@ -202,7 +230,7 @@ export function ListTasks() {
               <TotalizerSkeleton />
             ) : (
               <span className="items-center rounded-sm bg-primary px-3 text-white">
-                {result?.tasks.length}
+                {result?.meta.totalCount}
               </span>
             )}
           </div>
@@ -213,7 +241,9 @@ export function ListTasks() {
             ) : (
               <span className="items-center rounded-sm bg-primary px-3 text-white">
                 {completedTasksCount}{' '}
-                {result?.tasks.length ? 'de ' + result?.tasks.length : null}
+                {result?.meta.totalCount
+                  ? 'de ' + result?.meta.totalCount
+                  : null}
               </span>
             )}
           </div>
@@ -240,7 +270,9 @@ export function ListTasks() {
                   </div>
                   <div className="flex flex-col space-y-2">
                     <Button
-                      variant={`${sortOption === 'toDoFirst' ? 'outline' : 'ghost'}`}
+                      variant={`${
+                        sortOption === 'toDoFirst' ? 'outline' : 'ghost'
+                      }`}
                       onClick={() => setSortOption('toDoFirst')}
                     >
                       {sortOption === 'toDoFirst' && (
@@ -250,7 +282,9 @@ export function ListTasks() {
                     </Button>
 
                     <Button
-                      variant={`${sortOption === 'completedFirst' ? 'outline' : 'ghost'}`}
+                      variant={`${
+                        sortOption === 'completedFirst' ? 'outline' : 'ghost'
+                      }`}
                       onClick={() => setSortOption('completedFirst')}
                     >
                       {sortOption === 'completedFirst' && (
@@ -286,6 +320,12 @@ export function ListTasks() {
                   />
                 )
               })}
+              <Pagination
+                onPageChange={handlePaginate}
+                pageIndex={result.meta.pageIndex}
+                totalCount={result.meta.totalCount}
+                perPage={result.meta.perPage}
+              />
             </>
           ) : (
             <div className="flex flex-col items-center text-center">
