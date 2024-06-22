@@ -37,38 +37,20 @@ const newTaskForm = z.object({
 
 type NewTaskForm = z.infer<typeof newTaskForm>
 
-interface Task {
-  id: number
-  description: string
-  completed: boolean
-}
-
-interface TasksResponse {
-  tasks: Task[]
-  meta: {
-    pageIndex: number
-    perPage: number
-    totalCount: number
-  }
-}
-
 export function ListTasks() {
   const { toast } = useToast()
 
   const queryClient = useQueryClient()
 
-  const [sortOption, setSortOption] = useState<'toDoFirst' | 'completedFirst'>(
-    'toDoFirst',
-  )
-
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const [sort, setSort] = useState('toDo')
+  const [perPage, setPerPage] = useState(5)
 
   const pageIndex = z.coerce
     .number()
     .transform((page) => page - 1)
     .parse(searchParams.get('page') ?? '1')
-
-  const perPage = 5
 
   const {
     register,
@@ -78,11 +60,12 @@ export function ListTasks() {
   } = useForm<NewTaskForm>()
 
   const { data: result, isLoading: isLoadingTasks } = useQuery({
-    queryKey: ['tasks', pageIndex, perPage],
+    queryKey: ['tasks', pageIndex, perPage, sort],
     queryFn: () =>
       getTasks({
         pageIndex,
         perPage,
+        sort,
       }),
     staleTime: Infinity,
   })
@@ -98,11 +81,6 @@ export function ListTasks() {
     mutationFn: completeTask,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      const tasks = queryClient.getQueryData<TasksResponse>(['tasks'])
-      if (tasks) {
-        const sortedTasks = sortTasks(tasks.tasks, sortOption)
-        queryClient.setQueryData(['tasks'], { ...tasks, tasks: sortedTasks })
-      }
     },
   })
 
@@ -110,11 +88,6 @@ export function ListTasks() {
     mutationFn: deleteTask,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      const tasks = queryClient.getQueryData<TasksResponse>(['tasks'])
-      if (tasks) {
-        const sortedTasks = sortTasks(tasks.tasks, sortOption)
-        queryClient.setQueryData(['tasks'], { ...tasks, tasks: sortedTasks })
-      }
     },
   })
 
@@ -171,27 +144,17 @@ export function ListTasks() {
     }
   }
 
-  function sortTasks(tasks: Task[], option: 'toDoFirst' | 'completedFirst') {
-    return tasks.sort((a, b) => {
-      if (option === 'toDoFirst') {
-        return Number(a.completed) - Number(b.completed)
-      } else {
-        return Number(b.completed) - Number(a.completed)
-      }
-    })
-  }
-
-  const sortedTasks = result ? sortTasks(result.tasks, sortOption) : []
-  const completedTasksCount = result?.tasks.filter(
-    (task) => task.completed,
-  ).length
-
   function handlePaginate(pageIndex: number) {
     setSearchParams((prevState) => {
       prevState.set('page', (pageIndex + 1).toString())
 
       return prevState
     })
+  }
+
+  function handlePerPageChange(newPerPage: number) {
+    setPerPage(newPerPage)
+    handlePaginate(0)
   }
 
   return (
@@ -240,7 +203,7 @@ export function ListTasks() {
               <TotalizerSkeleton />
             ) : (
               <span className="items-center rounded-sm bg-primary px-3 text-white">
-                {completedTasksCount}{' '}
+                {result?.meta.completedTotalCount}{' '}
                 {result?.meta.totalCount
                   ? 'de ' + result?.meta.totalCount
                   : null}
@@ -256,7 +219,7 @@ export function ListTasks() {
             </div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button title="Ordenar" variant="ghost">
+                <Button title="Ordenar" size="icon" variant="ghost">
                   <ArrowDownUp />
                 </Button>
               </PopoverTrigger>
@@ -270,28 +233,55 @@ export function ListTasks() {
                   </div>
                   <div className="flex flex-col space-y-2">
                     <Button
-                      variant={`${
-                        sortOption === 'toDoFirst' ? 'outline' : 'ghost'
-                      }`}
-                      onClick={() => setSortOption('toDoFirst')}
+                      variant={`${sort === 'toDo' ? 'outline' : 'ghost'}`}
+                      onClick={() => setSort('toDo')}
                     >
-                      {sortOption === 'toDoFirst' && (
+                      {sort === 'toDo' && (
                         <CheckCheck className="mr-2 h-4 w-4" />
                       )}
                       A fazer
                     </Button>
-
                     <Button
-                      variant={`${
-                        sortOption === 'completedFirst' ? 'outline' : 'ghost'
-                      }`}
-                      onClick={() => setSortOption('completedFirst')}
+                      variant={`${sort === 'completed' ? 'outline' : 'ghost'}`}
+                      onClick={() => setSort('completed')}
                     >
-                      {sortOption === 'completedFirst' && (
+                      {sort === 'completed' && (
                         <CheckCheck className="mr-2 h-4 w-4" />
                       )}
                       Concluídas
                     </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Tarefas por página:
+                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <Button
+                        variant={`${perPage === 5 ? 'outline' : 'ghost'}`}
+                        className="h-8 w-8 p-0"
+                        onClick={() => handlePerPageChange(5)}
+                      >
+                        5<span className="sr-only">5</span>
+                      </Button>
+
+                      <Button
+                        variant={`${perPage === 15 ? 'outline' : 'ghost'}`}
+                        className="h-8 w-8 p-0"
+                        onClick={() => handlePerPageChange(15)}
+                      >
+                        15
+                        <span className="sr-only">15</span>
+                      </Button>
+
+                      <Button
+                        variant={`${perPage === 30 ? 'outline' : 'ghost'}`}
+                        className="h-8 w-8 p-0"
+                        onClick={() => handlePerPageChange(30)}
+                      >
+                        30
+                        <span className="sr-only">30</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </PopoverContent>
@@ -301,12 +291,12 @@ export function ListTasks() {
 
         <div className="mt-4 xl:mt-8">
           {isLoadingTasks ? (
-            <div className="flex items-center justify-center">
-              <LoaderIcon className="mt-12 h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <LoaderIcon className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : result?.tasks.length ? (
             <>
-              {sortedTasks.map((task) => {
+              {result?.tasks.map((task) => {
                 return (
                   <Tasks
                     key={`${task.id}`}
