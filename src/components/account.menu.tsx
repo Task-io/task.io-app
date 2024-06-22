@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { getUser } from '@/api/get-user'
 import { signOut } from '@/api/sign-out'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetTrigger } from '@/components/ui/sheet'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +12,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import { Skeleton } from './ui/skeleton'
-import { UserProfileSheet } from './user-profile-sheet'
+} from '@/components/ui/dropdown-menu'
+import { Sheet, SheetTrigger } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { UserProfileSheet } from '@/components/user-profile-sheet'
 
 export function AccountMenu() {
   const navigate = useNavigate()

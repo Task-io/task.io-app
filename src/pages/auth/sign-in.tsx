@@ -9,6 +9,7 @@ import { signIn } from '@/api/sign-in'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
 import { useToast } from '@/components/ui/use-toast'
 import { queryClient } from '@/lib/react-query'
 import { axiosErrorHandler } from '@/utils/axiosErrorHandler'
@@ -90,7 +91,7 @@ export function SignIn() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Sua senha</Label>
-              <Input id="password" type="password" {...register('password')} />
+              <PasswordInput id="password" {...register('password')} />
               {errors.password && (
                 <p className="text-sm text-red-500">
                   {errors.password.message}
