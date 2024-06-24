@@ -246,7 +246,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
           }}
         >
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" title="Apagar tarefa">
+            <Button variant="ghost" title="Detalhes">
               <Ellipsis size={22} />
             </Button>
           </AlertDialogTrigger>
