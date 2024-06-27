@@ -246,7 +246,11 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
           }}
         >
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" title="Detalhes">
+            <Button
+              variant="ghost"
+              title="Detalhes"
+              className={` ${completed ? '' : 'hover:bg-black/20'}`}
+            >
               <Ellipsis size={22} />
             </Button>
           </AlertDialogTrigger>
@@ -353,7 +357,7 @@ export function Tasks({ content, onToggleComplete, onDeleteTask }: TasksProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="ml-auto"
+                              className="ml-auto hover:bg-black/20"
                               title="Excluir comentário"
                               onClick={() => handleDeleteComment(data.id)}
                             >

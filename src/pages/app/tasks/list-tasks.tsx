@@ -188,25 +188,22 @@ export function ListTasks() {
 
         <header className="mt-6 flex items-center justify-between xl:mt-8">
           <div className="inline-flex gap-2 text-sm font-medium text-muted-foreground sm:text-base">
-            Tarefas criadas{' '}
+            Tarefas criadas
             {isLoadingTasks ? (
               <TotalizerSkeleton />
             ) : (
               <span className="items-center rounded-sm bg-primary px-3 text-white">
-                {result?.meta.totalCount}
+                {result?.meta.totalCount ?? 0}
               </span>
             )}
           </div>
           <div className="inline-flex gap-2 text-sm font-medium text-muted-foreground sm:text-base">
-            Concluídas{' '}
+            Concluídas
             {isLoadingTasks ? (
               <TotalizerSkeleton />
             ) : (
               <span className="items-center rounded-sm bg-primary px-3 text-white">
-                {result?.meta.completedTotalCount}{' '}
-                {result?.meta.totalCount
-                  ? 'de ' + result?.meta.totalCount
-                  : null}
+                {result?.meta.completedTotalCount ?? 0}
               </span>
             )}
           </div>
